@@ -77,7 +77,7 @@ app.get(
       res.badInput = false;
       let parts = req.params.date.split("-");
       console.log("parts: ", parts);
-      res.utc = new Date(parts[0], parts[1], parts[2]);
+      res.utc = new Date(req.params.date);
       console.log("res.utc: " + res.utc);
       res.unix = parseInt((res.utc.getTime() / 1000).toFixed(0));
     }
@@ -87,7 +87,7 @@ app.get(
     if (res.badInput === false) {
       res.json({
         unix: parseInt(res.unix),
-        utc: res.utc,
+        utc: res.utc.toString(),
       });
     } else {
       res.send("Bad date format");
