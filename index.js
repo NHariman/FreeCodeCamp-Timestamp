@@ -61,9 +61,26 @@ const invalidDate = (date) => {
   }
 };
 
+app.get("/api", function(req, res, next) {
+  res.utc = new Date().toUTCString();
+  res.unix = parseInt((new Date(res.utc).getTime()/1000));
+  next();
+}, (req, res) => {
+  res.json({
+    unix: parseInt(res.unix),
+    utc: res.utc.toString(),
+  });
+})
+
 app.get(
   "/api/:date",
   function (req, res, next) {
+    if (!req.params.date) {
+      res.badInput = true;
+      res.utc = new Date().toUTCString();
+      res.unix = parseInt((new Date(res.utc).getTime()/1000));
+    } else {
+      res.noDate = false;
     const isDate = invalidDate(req.params.date);
     if (isDate === 0) {
       console.error("bad date format");
@@ -72,15 +89,16 @@ app.get(
       res.badInput = false;
       console.log("unix time: req.params.date: " + req.params.date);
       res.unix = parseInt(req.params.date);
-      res.utc = new Date(res.unix);
+      res.utc = new Date(res.unix).toUTCString();
     } else {
       res.badInput = false;
       let parts = req.params.date.split("-");
       console.log("parts: ", parts);
-      res.utc = new Date(req.params.date);
+      res.utc = new Date(req.params.date).toUTCString();
       console.log("res.utc: " + res.utc);
-      res.unix = parseInt((res.utc.getTime() / 1000).toFixed(0));
+      res.unix = parseInt((new Date(req.params.date).getTime() / 1000));
     }
+  }
     next();
   },
   (req, res) => {
@@ -90,7 +108,9 @@ app.get(
         utc: res.utc.toString(),
       });
     } else {
-      res.send("Bad date format");
+      res.json({
+        error: "Invalid Date"
+      });
     }
   }
 );
