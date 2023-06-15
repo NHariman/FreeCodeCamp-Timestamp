@@ -28,33 +28,10 @@ const isUnix = (number) => {
 };
 
 const invalidDate = (date) => {
-  let dateObject = {
-    year: 0,
-    month: 0,
-    day: 0,
-  };
+  let dateTest = new Date(date);
   if (isUnix(date) === true) {
     return 1;
-  }
-  console.log(date);
-  for (const char of date) {
-    console.log(char);
-    if (char !== "-") {
-      if (!char.match(/[0-9]/i)) {
-        return 0;
-      } else {
-        if (dateObject.year < 4) {
-          dateObject.year += 1;
-        } else if (dateObject.month < 2) {
-          dateObject.month += 1;
-        } else if (dateObject.day < 2) {
-          dateObject.day += 1;
-        }
-      }
-    }
-  }
-  console.log(dateObject);
-  if (dateObject.year === 4 && dateObject.month === 2 && dateObject.day === 2) {
+  } else if (dateTest instanceof Date && !isNaN(dateTest)){
     return 2;
   } else {
     return 0;
@@ -63,7 +40,7 @@ const invalidDate = (date) => {
 
 app.get("/api", function(req, res, next) {
   res.utc = new Date().toUTCString();
-  res.unix = parseInt((new Date(res.utc).getTime()/1000));
+  res.unix = parseInt((new Date(res.utc).getTime()));
   next();
 }, (req, res) => {
   res.json({
@@ -78,7 +55,7 @@ app.get(
     if (!req.params.date) {
       res.badInput = true;
       res.utc = new Date().toUTCString();
-      res.unix = parseInt((new Date(res.utc).getTime()/1000));
+      res.unix = parseInt((new Date(res.utc).getTime()));
     } else {
       res.noDate = false;
     const isDate = invalidDate(req.params.date);
@@ -87,16 +64,12 @@ app.get(
       res.badInput = true;
     } else if (isDate === 1) {
       res.badInput = false;
-      console.log("unix time: req.params.date: " + req.params.date);
       res.unix = parseInt(req.params.date);
       res.utc = new Date(res.unix).toUTCString();
     } else {
       res.badInput = false;
-      let parts = req.params.date.split("-");
-      console.log("parts: ", parts);
       res.utc = new Date(req.params.date).toUTCString();
-      console.log("res.utc: " + res.utc);
-      res.unix = parseInt((new Date(req.params.date).getTime() / 1000));
+      res.unix = parseInt((new Date(req.params.date).getTime() ));
     }
   }
     next();
